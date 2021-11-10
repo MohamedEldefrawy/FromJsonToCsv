@@ -3,8 +3,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonPropertyOrder({
         "Country name",
-        "Number of cities",
-        "City with max length"
+        "City with max length",
+        "Number of cities"
 })
 
 public abstract class OrderLineForCsv {

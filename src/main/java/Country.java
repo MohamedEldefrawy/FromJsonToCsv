@@ -1,10 +1,11 @@
 
 public class Country {
-    private String countryName;
 
     private String cityWithMaxLength;
 
     private int numberOfCities;
+    private String countryName;
+
 
     public Country(String countryName, String cityWithMaxLength, int numberOfCities) {
         this.countryName = countryName;

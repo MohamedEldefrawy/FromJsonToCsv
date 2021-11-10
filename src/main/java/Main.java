@@ -1,3 +1,4 @@
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
@@ -49,9 +50,9 @@ public class Main {
             var index = cityLengths.indexOf(getMaxNumber(cityLengths));
 
 
-            jsonObject.put("Number of  cities", cities.get(i).size());
+            jsonObject.put("Number of cities", cities.get(i).size());
             jsonObject.put("Country name", countryNames.get(i));
-            jsonObject.put("City with max Length", cities.get(i).get(index));
+            jsonObject.put("City with max length", cities.get(i).get(index));
 
             processedData.add(jsonObject);
 
@@ -67,16 +68,35 @@ public class Main {
         }
 
         // read json and write csv
-        JsonNode processedJsonTree = new ObjectMapper().readTree(new File("src/main/resources/processedData.json"));
-        CsvSchema.Builder csvSchemaBuilder = CsvSchema.builder();
-        JsonNode header = processedJsonTree.elements().next();
-        header.fieldNames().forEachRemaining(fieldName -> csvSchemaBuilder.addColumn(fieldName));
-        CsvSchema csvSchema = csvSchemaBuilder.build().withHeader();
+//        JsonNode processedJsonTree = new ObjectMapper().readTree(new File("src/main/resources/processedData.json"));
 
-        CsvMapper csvMapper = new CsvMapper();
-        csvMapper.writerFor(JsonNode.class)
-                .with(csvSchema)
-                .writeValue(new File("src/main/resources/result.csv"), processedJsonTree);
+
+        try {
+            CsvMapper csvMapper = new CsvMapper();
+
+            CsvSchema csvSchema = csvMapper
+                    .schemaFor(OrderLineForCsv.class)
+                    .withHeader();
+
+            csvMapper.addMixIn(Country.class, OrderLineForCsv.class);
+            Country[] countries = new ObjectMapper()
+                    .readValue(new File("src/main/resources/processedData.json"), Country[].class);
+            csvMapper.writerFor(Country[].class)
+                    .with(csvSchema)
+                    .writeValue(new File("src/main/resources/result.csv"), countries);
+        } catch (Exception e) {
+            JsonNode processedJsonTree = new ObjectMapper().readTree(new File("src/main/resources/processedData.json"));
+            CsvSchema.Builder csvSchemaBuilder = CsvSchema.builder();
+            JsonNode header = processedJsonTree.elements().next();
+            header.fieldNames().forEachRemaining(fieldName -> csvSchemaBuilder.addColumn(fieldName));
+            CsvSchema csvSchema = csvSchemaBuilder.build().withHeader();
+
+            CsvMapper csvMapper = new CsvMapper();
+            csvMapper.writerFor(JsonNode.class)
+                    .with(csvSchema)
+                    .writeValue(new File("src/main/resources/result.csv"), processedJsonTree);
+        }
+
     }
 
     public static int getMaxNumber(List<Integer> nums) {
